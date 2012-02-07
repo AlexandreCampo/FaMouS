@@ -10,91 +10,98 @@
                                         A Fast, Modular, and Simple simulator                                                 
 
 
-=======================================================
+===============================================================================
  For the impatients
-=======================================================
+===============================================================================
 
 - use a recent debian based linux distribution (debian, ubuntu, mint, ...)
 - run setup.sh
 - you're done, test demos in the experiments directory 
 
 
-=======================================================
+===============================================================================
  What is it ?
-=======================================================
+===============================================================================
 
-FaMouS is a simulator initially designed to study swarm robotics.
-It aims at speed, simplicity and modularity to allow fast development and quick results in complex scenarios with many entities. 
+FaMouS is a simulator initially designed to study swarm robotics.  It aims at
+speed, simplicity and modularity to allow fast development and quick results in
+complex scenarios with many entities.
 
 Main concepts are the services and the objects.
 
-Example of services include an OpenGL render and a 3d physics engine based on bullet. There are objects such as a
-floor, a robot, an arena. Objects must be designed to interact with services. To do so, they inherit from an interface that comes
-with the service. If an object implements that interface, it becomes de facto compatible with the service and it can register in
-it.
+Example of services include an OpenGL render and a 3d physics engine based on
+bullet. There are objects such as a floor, a robot, an arena. Objects must be
+designed to interact with services. To do so, they inherit from an interface
+that comes with the service. If an object implements that interface, it becomes
+de facto compatible with the service and it can register in it.
 
-In addition, objects can have devices (such as sensors and actuators : motors, infrared sensors etc...)
-and any object can be assigned a controller.
+In addition, objects can have devices (such as sensors and actuators : motors,
+infrared sensors etc...)  and any object can be assigned a controller.
 
-A fundamental idea of FaMouS is modularity. Any object/service/device/controller can be easily copy/pasted, modified and reused with
-no consequence on other parts of the simulator (exception is changes to service interface which also imply changes to objects
-implementing that interface).
+A fundamental idea of FaMouS is modularity. Any object/service/device/controller
+can be easily copy/pasted, modified and reused with no consequence on other
+parts of the simulator (exception is changes to service interface which also
+imply changes to objects implementing that interface).
 
 The simulator itself comes as a library that you can link to your code.
 
-We expect users to just create directories in which they throw new services / objects / devices / controllers adapted from existing
-sources. If some material is frequently reused, we will promote it and integrate it in the core of the simulator.
+We expect users to just create directories in which they throw new services /
+objects / devices / controllers adapted from existing sources. If some material
+is frequently reused, we will promote it and integrate it in the core of the
+simulator.
 
 
-=======================================================
+===============================================================================
  Requirements
-=======================================================
+===============================================================================
 
-Libraries required : 
+Libraries required :
 
-- modified bullet library (go in directory bullet and follow the instructions in README, running setup.sh is easier)
+- modified bullet library (go in directory bullet and follow the instructions in
+  README, running setup.sh is easier)
 
-- g++ dos2unix automake libtool libglu1-mesa-dev libgl1-mesa-dev freeglut3-dev libgsl0-dev libtinyxml-dev libboost-program-options-dev
+- make g++ dos2unix automake libtool libglu1-mesa-dev libgl1-mesa-dev
+  freeglut3-dev libgsl0-dev libtinyxml-dev libboost-program-options-dev
 
 
-=======================================================
+===============================================================================
  Building FaMouS
-=======================================================
+===============================================================================
 
-To compile, you need premake4 (http://industriousone.com/premake/download).
-If you have used setup.sh, you will find premake4 in the root directory.
+To compile, you need premake4 (http://industriousone.com/premake/download).  If
+you have used setup.sh, you will find premake4 in the root directory.
 
 Premake4 is used to generate Makefiles, based on a premake4.lua script.
 
 To clean and/or generate makefiles :
 
-premake4 clean
-premake4 gmake
+premake4 clean premake4 gmake
 
 
 To clean and/or build the simulator library:
 
 make [clean]
 
-make config=debug [clean]
-make config=profile [clean]
+make config=debug [clean] make config=profile [clean]
 
 
-In the experiments directory, a variety of projects can be compiled in the same way, 
-using premake4 to generate makefiles and make to produce an executable file. 
+In the experiments directory, a variety of projects can be compiled in the same
+way, using premake4 to generate makefiles and make to produce an executable
+file.
 
 
-=======================================================
+===============================================================================
  Getting started
-=======================================================
+===============================================================================
 
-To work with FaMouS, you can heavily rely on copy/paste, duplication and modification of other material.
-In the experiments directory you will find some examples that you can test, study, and hack.
-Create a directory for yourself, and add your projects there.
+To work with FaMouS, you can heavily rely on copy/paste, duplication and
+modification of other material.  In the experiments directory you will find some
+examples that you can test, study, and hack.  Create a directory for yourself,
+and add your projects there.
 
 
-=======================================================
+===============================================================================
  Contact
-=======================================================
-Questions, problems : alexandre.campo@ulb.ac.be
+===============================================================================
+Questions, problems : alexandre.campo@ulb.ac.be, alexandre.campo@gmail.com
 
