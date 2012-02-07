@@ -3,10 +3,10 @@
 <Experiment 
     replications = "1"
     replicationShift = "0"
-    robotsCount = "2000"
+    robotsCount = "20"
     basestationsCount = "2"
     maxTime = "3600.0"
-    aquariumRadius = "20.0"
+    aquariumRadius = "2.0"
 />
 
 <ControllerDiscrimination

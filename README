@@ -16,7 +16,10 @@
 
 - use a recent debian based linux distribution (debian, ubuntu, mint, ...)
 - run setup.sh
-- you're done, test demos in the experiments directory 
+- you're done, test demos in the experiments directory
+  
+  don't forget : press space to toggle pause and run the simulator
+                 keyboard shortcuts are displayed on the terminal
 
 
 ===============================================================================

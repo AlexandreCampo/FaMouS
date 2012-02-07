@@ -31,7 +31,7 @@ int main(int argc,char** argv)
     po::options_description desc("\nAllowed options");
     desc.add_options()
 	("help,h", "produce help message")
-        ("graphics,g", "activate graphic output")
+        ("no-graphics,n", "disable graphic output")
         ("output,o", po::value<string>(), "output results to a file")
         ("replications,r", po::value<int>(), "replicate the experiment n times")
         ("shift,s", po::value<int>(), "replication count shift (or count start)")
@@ -55,11 +55,11 @@ int main(int argc,char** argv)
 	std::cout << "Reading parameters from file " << paramsFilename << std::endl;
     } 
 
-    bool graphics = false;
-    if (vm.count("graphics")) 
+    bool graphics = true;
+    if (vm.count("no-graphics")) 
     {
-	std::cout << "Graphic output enabled " << std::endl;
-	graphics = true;	
+	std::cout << "Graphic output disabled " << std::endl;
+	graphics = false;	
     } 
 
     string outputFilename;

@@ -150,8 +150,7 @@ RenderOpenGL::RenderOpenGL(Simulator* s, int argc, char** argv) : Service (s)
     simulationElapsedTicks = 0.0;
 
     refreshDelay = (long int) (1.0 / 24.0 * 1000.0 * 1000.0);
-    lastTv.tv_sec = 0;
-    lastTv.tv_usec = 0;
+    gettimeofday(&lastTv, NULL);   
 
     paused = false;
 }
