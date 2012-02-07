@@ -1,0 +1,14 @@
+To work with fss, you need bullet. We currently use a _modified_ version of bullet-2.78. 
+
+Install bullet : 
+
+- download the sources of bullet 2.78 at http://code.google.com/p/bullet/downloads/list
+- replace the file src/BulletDynamics/Dynamics/btRigidBody.h with the one we provide
+- ./configure && make && make install
+
+
+Why a modified version ? 
+
+We implemented some basic underwater dynamics, and for this we had to create a different
+rigid body class, which we called btUnderwaterRigidBody. This new class derives from a 
+btRigidBody and we had to make some methods virtual to allow overriding.

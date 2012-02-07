@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+
+<Experiment 
+    replications = "1"
+    replicationShift = "0"
+    robotsCount = "2000"
+    basestationsCount = "2"
+    maxTime = "3600.0"
+    aquariumRadius = "20.0"
+/>
+
+<ControllerDiscrimination
+  theta                           = "0.75"
+  rho                             = "1000.0"
+  decisionDelay                   = "30.0"
+  obstacleAvoidanceThreshold      = "0.1"
+  maxProximitySensing             = "0.12"
+  obstacleAvoidanceSpeed          = "0.99"
+  exploreMeanDuration             = "15.0"
+  exploreSpeed                    = "0.5"
+  turnSpeed                       = "0.1"
+  breakSpeed                      = "0.2"
+  restSpeed                       = "0.5"
+  collisionsDecisionDelay         = "5.0"
+  controlVariant                  = "0"
+/>
