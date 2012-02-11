@@ -44,7 +44,6 @@ struct ControllerDiscriminationParameters
     float breakSpeed;
     float restSpeed;
     float collisionsDecisionDelay;
-    int controlVariant;
 
     ControllerDiscriminationParameters ()
 	{
@@ -60,7 +59,6 @@ struct ControllerDiscriminationParameters
 	    breakSpeed = 0.2;
 	    restSpeed = 0.5;
 	    collisionsDecisionDelay = 5.0;
-	    controlVariant = 0;
 	}
 
     void LoadXML (TiXmlElement* el)
@@ -82,7 +80,6 @@ struct ControllerDiscriminationParameters
 	    res = el->Attribute("breakSpeed", &value); if (res) breakSpeed = value;
 	    res = el->Attribute("restSpeed", &value); if (res) restSpeed = value;
 	    res = el->Attribute("collisionsDecisionDelay", &value); if (res) collisionsDecisionDelay = value;
-	    res = el->Attribute("controlVariant", &ivalue); if (res) controlVariant = ivalue;
 	}
 };
 

@@ -25,17 +25,36 @@
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "LinearMath/btDefaultMotionState.h"
 
+#include <iostream>
 #include <GL/glut.h> 
 #include <GL/gl.h>   
 #include <GL/glu.h>  
-#include <iostream>
 
 
-ArenaCircular::ArenaCircular() :
+ArenaCircular::ArenaCircular (float radius, float height, float thickness, float resolution) :
     Object(),
     PhysicsBulletInterface(),
     RenderOpenGLInterface()
 {
+    this->radius = radius;
+    this->height = height;
+    this->width = thickness;
+    this->borderResolution = resolution;
+
+    dimGround.setX (radius * 2.0 + width);
+    dimGround.setY (radius * 2.0 + width);
+    dimGround.setZ (width);
+
+    // border component length is related to border perimeter
+    float perimeter = 2.0 * radius * M_PI;
+    float angle = 2.0 * M_PI / borderResolution;
+    dimBorder.setX (tan(angle / 2.0) * radius * 3.0);
+    dimBorder.setY (width);
+    dimBorder.setZ (height);
+
+    // define collision type
+    SetCollisionType (1<<1);
+    SetCollisionFilter (0x7FFFFFFF);
 }
 
 
@@ -46,72 +65,101 @@ ArenaCircular::~ArenaCircular()
 
 void ArenaCircular::Draw (RenderOpenGL* r)
 {
-    // drawing depends on existence in physics bullet... 
-    if (bodies.size() > 0)
+    // go through all shapes and draw them
+    int i = 0;
+    vector<btRigidBody*>::iterator it;
+//    for (it = bodies.begin(); it != bodies.end(); it++)
+    it = bodies.begin();
     {
-	// go through all shapes and draw them
-	int i = 0;
-	vector<btRigidBody*>::iterator it;
-	for (it = bodies.begin(); it != bodies.end(); it++)
-	{
-	    btRigidBody* body = *it;
-
-	    dsRotationMatrix rotmat;
-	    dRotation2dsRotationMatrix(0, rotmat);
-        
-	    btScalar m[16];
-	    btMatrix3x3 rot;
-	    rot.setIdentity();
-	    
-	    btDefaultMotionState* myMotionState = (btDefaultMotionState*)body->getMotionState();
-	    myMotionState->m_graphicsWorldTrans.getOpenGLMatrix(m);
-	    
-	    glPushMatrix(); 	
-	    glMultMatrixf(m);
+	btRigidBody* body = *it;
 	
-	    float position [3];
-	    position[0] = 0;
-	    position[1] = 0;
-	    position[2] = 0;
-
-	    if (i == 0)
-	    {
-		r->dsSetColor (0.3, 0.3, 0.3);
-		r->dsDrawBox((float*) &position, (float*) &rotmat, (float*) &dimGround.m_floats);
-		i++;
-	    }
-	    else
-	    {
-		r->dsSetColorAlpha (0.3, 0.3, 0.3, 0.3);
-		r->dsDrawBox((float*) &position, (float*) &rotmat, (float*) &dimBorder.m_floats);
-		i++;
-	    }
-	    glPopMatrix();
+	dsRotationMatrix rotmat;
+	dRotation2dsRotationMatrix(0, rotmat);
+        
+	btScalar m[16];
+	btMatrix3x3 rot;
+	rot.setIdentity();
+	
+	btDefaultMotionState* myMotionState = (btDefaultMotionState*)body->getMotionState();
+	myMotionState->m_graphicsWorldTrans.getOpenGLMatrix(m);
+	
+	glPushMatrix(); 	
+	glMultMatrixf(m);
+	
+	float position [3];
+	position[0] = 0;
+	position[1] = 0;
+	position[2] = width/2.0 - 0.1;
+	
+	if (i == 0)
+	{
+	    r->dsSetColor (0.3, 0.3, 0.3);
+	    btVector3 d (radius*2.0, radius*2.0, 0.1); 
+	    r->dsDrawBox((float*) &position, (float*) &rotmat, (float*) &d.m_floats);
+	    i++;
 	}
+	else
+	{
+	    // dont draw the real boxes, it is unaesthetic
+	    // r->dsSetColor (0.7, 0.7, 0.7);
+	    // btVector3 d = dimBorder; 
+	    // r->dsDrawBox((float*) &position, (float*) &rotmat, (float*) &d.m_floats);
+//	    r->dsDrawCylinder((float*) &position, (float*) &rotmat, d.z(), d.x());
+	    i++;
+	}
+	glPopMatrix();
+	glPushMatrix(); 	
+
+	// draw the borders using wireframe
+	glEnable(GL_COLOR_MATERIAL);	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glLineWidth(1.0);
+	glDisable(GL_CULL_FACE);
+	glColor4f(0.1, 0.1, 0.1, 1);
+
+	float l = height;
+	float r = radius;
+	int i;
+	float tmp,ny,nz,a,ca,sa;
+	const int n = borderResolution;	// number of sides to the cylinder (divisible by 4)
+	
+	a = float(M_PI*2.0)/float(n);
+	sa = (float) sin(a);
+	ca = (float) cos(a);
+	
+	int ringsCount = 3;
+	float zstep = l / float(ringsCount);
+	float zoffset = l + 0.05;
+	for (int zs = 0; zs <= ringsCount; zs++)
+	{
+	    // draw cylinder body
+	    ny=1; nz=0;		  // normal vector = (0,ny,nz)
+	    glBegin (GL_LINE_STRIP);
+	    for (i=0; i<=n; i++) 
+	    {
+		glNormal3d (ny,nz,zoffset);
+		glVertex3d (ny*r,nz*r,zoffset);
+		
+		// rotate ny,nz
+		tmp = ca*ny - sa*nz;
+		nz = sa*ny + ca*nz;
+		ny = tmp;
+	    }
+	    glEnd();
+	    zoffset -= zstep;
+	}
+
+	glEnable(GL_CULL_FACE);	
+	glPolygonMode(GL_FRONT, GL_FILL);
+	glDisable(GL_COLOR_MATERIAL);
+
+	glPopMatrix();
     }    
 }
 
 
 void ArenaCircular::Register(PhysicsBullet* p)
 {
-    radius = 1.0 * p->scalingFactor;
-    borderHeight = 0.2  * p->scalingFactor;
-    width = 0.05  * p->scalingFactor;
-    borderResolution = 40.0  * p->scalingFactor;
-
-    dimGround.setX (radius * 2.0);
-    dimGround.setY (radius * 2.0);
-    dimGround.setZ (width);
-
-    // border component length is related to border perimeter
-    float perimeter = 2.0 * radius * M_PI;
-    dimBorder.setX (perimeter / borderResolution);
-    dimBorder.setY (width);
-    dimBorder.setZ (borderHeight);
-
-    // define collision type
-    SetCollisionType (1<<1);
-
     // create the ground floor
     btBoxShape* groundShape = new btBoxShape(dimGround / 2.0);
     p->m_collisionShapes.push_back(groundShape);
@@ -132,7 +180,7 @@ void ArenaCircular::Register(PhysicsBullet* p)
     bodies.push_back(body);
 
     // now create the arena as a set of boxes
-    float angle = 0.0;
+    float angle = 0.0;	
     float angleStep = 2.0 * M_PI / borderResolution;
     for (int i = 0; i < (int)borderResolution; i++)
     {
@@ -145,9 +193,9 @@ void ArenaCircular::Register(PhysicsBullet* p)
 	btTransform transform;
 	transform.setIdentity();
 
-	float x = cos(angle) * radius;
-	float y = sin(angle) * radius;
-	float z = borderHeight / 2.0;
+	float x = cos(angle) * (radius + width / 2.0);
+	float y = sin(angle) * (radius + width / 2.0);
+	float z = height / 2.0;
 
 	transform.setOrigin(btVector3(x, y, z));
 	btQuaternion q(btVector3(0, 0, 1), angle + M_PI / 2.0);
@@ -170,4 +218,16 @@ void ArenaCircular::Register(PhysicsBullet* p)
 void ArenaCircular::Unregister(PhysicsBullet* p)
 {
     
+}
+
+// very unfortunate... I consider this as a c++ bug : 
+// overloading inherited methods hides base methods even though signature is different
+void ArenaCircular::Register (RenderOpenGL* r)
+{
+    RenderOpenGLInterface::Register(r);
+}
+
+void ArenaCircular::Unregister (RenderOpenGL* r)
+{
+    RenderOpenGLInterface::Unregister(r);
 }

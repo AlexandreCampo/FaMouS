@@ -56,7 +56,11 @@ public:
     void Register (PhysicsBullet* p);
     void Unregister (PhysicsBullet* p);
 
+    void Register (RenderOpenGL* r);
+    void Unregister (RenderOpenGL* r);
+
     void SetPosition (float x, float y, float z);
+    void SetRotation (float qx, float qy, float qz, float qa);
 };
 
 #endif

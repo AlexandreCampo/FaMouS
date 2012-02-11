@@ -17,43 +17,23 @@
 /*    along with FaMouS.  If not, see <http://www.gnu.org/licenses/>.         */
 /*----------------------------------------------------------------------------*/
 
-#ifndef ARENA_CIRCULAR_H
-#define ARENA_CIRCULAR_H
+#ifndef CONTROLLER_RANDOM_H
+#define CONTROLLER_RANDOM_H
 
-#include "Object.h"
-#include "RenderOpenGLInterface.h"
-#include "PhysicsBulletInterface.h"
+#include "Controller.h"
+#include "BasicRobot.h"
 
-#include "BulletDynamics/Dynamics/btDynamicsWorld.h"
-#include "BulletCollision/CollisionShapes/btCollisionShape.h"
-
-#include <vector>
-
-class ArenaCircular : public Object, public RenderOpenGLInterface, public PhysicsBulletInterface
+class ControllerRandom : public Controller
 {
-public:
+public : 
+    BasicRobot* robot;
+    
+    ControllerRandom (BasicRobot* br);
+    ~ControllerRandom ();
 
-    float radius;
-    float height;
-    float width;
-    float borderResolution;
-    btVector3 dimGround;
-    btVector3 dimBorder;
-
-    // the arena is made of several boxes (ground, then walls around)
-    std::vector<btCollisionShape*> shapes;
-    std::vector<btRigidBody*> bodies;
-
-    ArenaCircular(float radius = 3.0, float height = 2.0, float thickness = 1.0, float resolution = 40.0);
-    ~ArenaCircular();
-
-    void Draw (RenderOpenGL* r);
-
-    void Register (PhysicsBullet* p);
-    void Unregister (PhysicsBullet* p);
-
-    void Register (RenderOpenGL* r);
-    void Unregister (RenderOpenGL* r);
+    void Step (float time, float timestep);
+    void Reset ();
 };
+
 
 #endif

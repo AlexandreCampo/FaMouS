@@ -3,7 +3,7 @@
 <Experiment 
     replications = "1"
     replicationShift = "0"
-    robotsCount = "20"
+    robotsCount = "15"
     basestationsCount = "2"
     maxTime = "3600.0"
     aquariumRadius = "2.0"
@@ -11,7 +11,7 @@
 
 <ControllerDiscrimination
   theta                           = "0.75"
-  rho                             = "1000.0"
+  rho                             = "1100.0"
   decisionDelay                   = "30.0"
   obstacleAvoidanceThreshold      = "0.1"
   maxProximitySensing             = "0.12"
@@ -22,5 +22,4 @@
   breakSpeed                      = "0.2"
   restSpeed                       = "0.5"
   collisionsDecisionDelay         = "5.0"
-  controlVariant                  = "0"
 />

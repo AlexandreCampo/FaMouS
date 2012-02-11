@@ -17,43 +17,24 @@
 /*    along with FaMouS.  If not, see <http://www.gnu.org/licenses/>.         */
 /*----------------------------------------------------------------------------*/
 
-#ifndef ARENA_CIRCULAR_H
-#define ARENA_CIRCULAR_H
+// This example is the most simple possible with underwater vehicles.
+// A group robots make random walks and avoid obstacles in an aquarium. 
 
-#include "Object.h"
-#include "RenderOpenGLInterface.h"
-#include "PhysicsBulletInterface.h"
 
-#include "BulletDynamics/Dynamics/btDynamicsWorld.h"
-#include "BulletCollision/CollisionShapes/btCollisionShape.h"
+#include "Simulator.h"
+#include "Experiment.h"
 
-#include <vector>
+#include <iostream>
 
-class ArenaCircular : public Object, public RenderOpenGLInterface, public PhysicsBulletInterface
+	
+int main(int argc,char** argv)
 {
-public:
+    Simulator* simulator = new Simulator ();
+    simulator->SetTimestep (0.005); // the default at 0.05s is not accurate enough for cylinders...
+    Experiment* exp = new Experiment (simulator);
 
-    float radius;
-    float height;
-    float width;
-    float borderResolution;
-    btVector3 dimGround;
-    btVector3 dimBorder;
+    exp->Run();    
 
-    // the arena is made of several boxes (ground, then walls around)
-    std::vector<btCollisionShape*> shapes;
-    std::vector<btRigidBody*> bodies;
+    delete simulator;
+}
 
-    ArenaCircular(float radius = 3.0, float height = 2.0, float thickness = 1.0, float resolution = 40.0);
-    ~ArenaCircular();
-
-    void Draw (RenderOpenGL* r);
-
-    void Register (PhysicsBullet* p);
-    void Unregister (PhysicsBullet* p);
-
-    void Register (RenderOpenGL* r);
-    void Unregister (RenderOpenGL* r);
-};
-
-#endif

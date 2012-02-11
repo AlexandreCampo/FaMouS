@@ -17,7 +17,7 @@
 /*    along with FaMouS.  If not, see <http://www.gnu.org/licenses/>.         */
 /*----------------------------------------------------------------------------*/
 
-#include "ControllerDiscrimination.h"
+#include "ControllerRandomWalk.h"
 
 
 #include <cmath>
@@ -29,7 +29,7 @@ extern gsl_rng* rng;
 extern long int rngSeed;
 
 
-ControllerDiscrimination::ControllerDiscrimination (RobotLily* l)
+ControllerRandomWalk::ControllerRandomWalk (RobotLily* l)
     : Controller (l)
 {
     this->lily = l;
@@ -38,18 +38,18 @@ ControllerDiscrimination::ControllerDiscrimination (RobotLily* l)
 }
 
 
-ControllerDiscrimination::~ControllerDiscrimination ()
+ControllerRandomWalk::~ControllerRandomWalk ()
 {
 
 }
 
-void ControllerDiscrimination::SetParameters(ControllerDiscriminationParameters* p)
+void ControllerRandomWalk::SetParameters(ControllerRandomWalkParameters* p)
 {
     params = *p;
 }
 
 
-void ControllerDiscrimination::Step (float time, float timestep)
+void ControllerRandomWalk::Step (float time, float timestep)
 {
     this->time = time;
     this->timestep = timestep;
@@ -58,52 +58,22 @@ void ControllerDiscrimination::Step (float time, float timestep)
     {
     case EXPLORE : StateExplore(); break;
     case TURN : StateTurn(); break;
-    case REST : StateRest(); break;
     }
 }
 
-bool ControllerDiscrimination::IsAtBase ()
-{
-    if (!lily->acoustic->messagesReceived.empty())
-    {
-	restLastSignalTime = time;
-	lily->acoustic->messagesReceived.clear();
-    }
 
-    if (time - restLastSignalTime < 1.0) return true;
-    else return false;
-}
-
-
-void ControllerDiscrimination::StateExploreInit ()
+void ControllerRandomWalk::StateExploreInit ()
 {
     float rnd = 1.0 - gsl_ran_flat(rng, 0.0, 1.0);
     exploreDuration = - log (rnd) * params.exploreMeanDuration;
 
     exploreStartTime = time;
     state = EXPLORE;
-
-    // set robot's colour
-    lily->SetColor(0.5,0.5,1.0); 
 }
 
 
-void ControllerDiscrimination::StateExplore ()
+void ControllerRandomWalk::StateExplore ()
 {
-    // ==================
-    // transitions to other states
-
-    // if under shelter -> rest
-    if (IsAtBase())
-    {
-	StateRestInit();
-	return;	   
-    }
-    else
-    {
-	lily->SetColor(0.5,0.5,1.0); 
-    }
-
     // if time to change direction -> turn
     if (time - exploreStartTime > exploreDuration)
     {
@@ -114,89 +84,20 @@ void ControllerDiscrimination::StateExplore ()
 	return;
     }
 
-    // ==================
-    // inside the state
-    
     if (ObstacleAvoidance ())
-	return;
-
-    lily->propellers->SetSpeed(params.exploreSpeed, params.exploreSpeed);
-}
-
-void ControllerDiscrimination::StateRestInit ()
-{
-    state = REST;    
-
-    restLastSignalTime = time;
-    collisionsDecisionLastTime = time;
-
-    // set robot's colour
-    lily->SetColor(1.0,0.0,0.0); 
-}
-
-void ControllerDiscrimination::StateRest ()
-{
-    // ==================
-    // transitions to other states
-
-    // if not anymore under shelter -> come back
-    if (!IsAtBase())
     {
-	restEscapeFromShelter = false;
-	StateExploreInit ();
+	lily->SetColor(1.0,0.0,0.0); // red
 	return;
     }
-
-    // ==================
-    // inside the state
-
-    // break ? 
-    if (time - restStartTime > 2.5)
+    else
     {
-	lily->propellers->SetSpeed(0.0, 0.0);
-    }
-    else if (time - restStartTime > 1.0)
-    {
-	lily->propellers->SetSpeed(-params.breakSpeed, -params.breakSpeed);
-    }
-
-    // check if robot wants to leave shelter
-    if (time - collisionsDecisionLastTime> params.collisionsDecisionDelay)
-    {       
-	// evaluate local density
-	float front = lily->rayFrontLU->GetValue();
-	float v = lily->rayFrontLD->GetValue();
-	if (v > front) front = v;
-	v = lily->rayFrontRU->GetValue();
-	if (v > front) front = v;
-	v = lily->rayFrontRD->GetValue();
-	if (v > front) front = v;
-	float density = front + lily->rayLeft->GetValue() + lily->rayRight->GetValue() + lily->rayTop->GetValue() + lily->rayBottom->GetValue() + lily->rayBack->GetValue();
-	density /= 6.0;
-	
-	float proba = params.theta / (1.0 + params.rho * density * density); 
-	float rand = gsl_rng_uniform(rng);
-	if (rand < proba)
-	{
-	    restEscapeFromShelter = true;
-	}	
-
-	collisionsDecisionLastTime = time;
-    }
-
-    if (restEscapeFromShelter)
-    {
-	if (!ObstacleAvoidance ())
-	{
-	    lily->propellers->SetSpeed(params.restSpeed, params.restSpeed);
-	}
+	lily->SetColor(0.5,0.5,1.0); // blue
+	lily->propellers->SetSpeed(params.speed, params.speed);
     }
 }
 
 
-
-
-void ControllerDiscrimination::StateTurnInit(int previousState, float angle)
+void ControllerRandomWalk::StateTurnInit(int previousState, float angle)
 {
     turnPreviousState = previousState;
 
@@ -205,31 +106,26 @@ void ControllerDiscrimination::StateTurnInit(int previousState, float angle)
     else
 	turnSign = -1.0;
 
-    turnDuration = (fabs(angle) / M_PI) / 3.0 / params.turnSpeed;
+    turnDuration = (fabs(angle) / M_PI) / 3.0 / params.speed;// /5.0
     turnStartTime = time;
     state = TURN;
 }
 
-void ControllerDiscrimination::StateTurn()
+void ControllerRandomWalk::StateTurn()
 {
-    // ==================
-    // transitions to other states
     if (time - turnStartTime > turnDuration)
     {
 	switch (turnPreviousState)
 	{
 	case EXPLORE : StateExploreInit(); return;
-	case REST : StateRestInit(); return;
 	}
     }
 
-    // ==================
-    // inside the state
-    lily->propellers->SetSpeed(params.turnSpeed * turnSign, -params.turnSpeed * turnSign);
+    lily->propellers->SetSpeed(params.speed * turnSign, -params.speed * turnSign); // /5.0
 }
 
 
-bool ControllerDiscrimination::ObstacleAvoidance()
+bool ControllerRandomWalk::ObstacleAvoidance()
 {    
     // check if an obstacle is perceived 
     int obstaclePerceived = 0;
@@ -274,8 +170,8 @@ bool ControllerDiscrimination::ObstacleAvoidance()
     }
     
     // rescale values
-    leftSpeed *= params.obstacleAvoidanceSpeed;
-    rightSpeed *= params.obstacleAvoidanceSpeed;
+    leftSpeed *= params.speed; // /5 
+    rightSpeed *= params.speed; // /5
 
     // change movement direction
     lily->propellers->SetSpeed(leftSpeed, rightSpeed);
@@ -288,7 +184,7 @@ bool ControllerDiscrimination::ObstacleAvoidance()
 /******************************************************************************/
 /******************************************************************************/
 
-void ControllerDiscrimination::Reset ()
+void ControllerRandomWalk::Reset ()
 {
     // reset time
     time = 0.0;
@@ -303,14 +199,7 @@ void ControllerDiscrimination::Reset ()
     turnStartTime = 0.0;
     turnSign = 1.0;
     
-    restDuration = 0.0;
-    restStartTime = 0.0;
-    restEscapeFromShelter = false;
-    restLastSignalTime = -100.0;
-
     // start in explore state
     state = EXPLORE;
     StateExploreInit();
 }
-
-

@@ -102,7 +102,7 @@ public :
     void DrawScene();
     void Step (float time, float timestep);
     void SetPaused (bool p);
-
+    void RecalculateTimings ();
 
     ///callback methods by glut
     void KeyboardCallback(unsigned char key, int x, int y);

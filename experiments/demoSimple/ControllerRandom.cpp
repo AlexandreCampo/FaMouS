@@ -17,43 +17,43 @@
 /*    along with FaMouS.  If not, see <http://www.gnu.org/licenses/>.         */
 /*----------------------------------------------------------------------------*/
 
-#ifndef ARENA_CIRCULAR_H
-#define ARENA_CIRCULAR_H
+#include "ControllerRandom.h"
 
-#include "Object.h"
-#include "RenderOpenGLInterface.h"
-#include "PhysicsBulletInterface.h"
 
-#include "BulletDynamics/Dynamics/btDynamicsWorld.h"
-#include "BulletCollision/CollisionShapes/btCollisionShape.h"
+#include <cmath>
+#include <iostream>
 
-#include <vector>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+extern gsl_rng* rng;
+extern long int rngSeed;
 
-class ArenaCircular : public Object, public RenderOpenGLInterface, public PhysicsBulletInterface
+
+ControllerRandom::ControllerRandom (BasicRobot* br)
+    : Controller (br)
 {
-public:
+    this->robot = br;
+}
 
-    float radius;
-    float height;
-    float width;
-    float borderResolution;
-    btVector3 dimGround;
-    btVector3 dimBorder;
 
-    // the arena is made of several boxes (ground, then walls around)
-    std::vector<btCollisionShape*> shapes;
-    std::vector<btRigidBody*> bodies;
+ControllerRandom::~ControllerRandom ()
+{
 
-    ArenaCircular(float radius = 3.0, float height = 2.0, float thickness = 1.0, float resolution = 40.0);
-    ~ArenaCircular();
+}
 
-    void Draw (RenderOpenGL* r);
+void ControllerRandom::Step (float time, float timestep)
+{
+    float rate = 2.0;
+    if (gsl_ran_flat(rng, 0.0, 1.0) < rate * timestep)
+    {
+        // now select a random speed    
+        float direction = gsl_ran_flat(rng, -M_PI, M_PI);
+	float magnitude = 300.0 * gsl_ran_flat(rng, 0.1, 1.0);
+        robot->magicForce->ApplyForce(btVector3(cos(direction) * magnitude, sin(direction) * magnitude, 0.0));
+    }
+}
 
-    void Register (PhysicsBullet* p);
-    void Unregister (PhysicsBullet* p);
+void ControllerRandom::Reset()
+{
 
-    void Register (RenderOpenGL* r);
-    void Unregister (RenderOpenGL* r);
-};
-
-#endif
+}

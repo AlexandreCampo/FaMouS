@@ -41,6 +41,9 @@ BasicRobot::BasicRobot() :
     PhysicsBulletInterface(),
     RenderOpenGLInterface()
 {
+    // define collision type
+    SetCollisionType (1 << 2);
+    SetCollisionFilter (0x7FFFFFFF);
 } 
 
 
@@ -70,13 +73,13 @@ void BasicRobot::Draw (RenderOpenGL* r)
 	btScalar m[16];
 	btMatrix3x3 rot;
 	rot.setIdentity();
-
+	
 	btTransform t = body->getCenterOfMassTransform();
 	t.getOpenGLMatrix(m);
-	
+        
 	glPushMatrix(); 
 	glMultMatrixf(m);
-
+	
 	dsRotationMatrix rotmat;
 	float pos[3];	
 	pos[0] = 0;
@@ -90,18 +93,6 @@ void BasicRobot::Draw (RenderOpenGL* r)
 	r->dsDrawCylinder((float*) &pos, (float*) &rotmat, height, radius);
 
 	glPopMatrix();
-
-	// draw devices ...
-//	proximitySensor->Draw(r);
-	// vector<Device*>::iterator it;
-	// for (it = devices.begin(); it != devices.end(); it++)
-	// {
-	//     RenderOpenGLInterface* d = dynamic_cast<RenderOpenGLInterface*>(*it);
-	//     if (d)
-	//     {
-	// 	d->Draw(r);
-	//     }
-	// }	
     }
 }
 
@@ -111,34 +102,47 @@ void BasicRobot::Register (PhysicsBullet* p)
     height = 0.02 * p->scalingFactor;
     radius = 0.035 * p->scalingFactor;
 
-    // define collision type
-    SetCollisionType (1 << 2);
-
     //create a few dynamic rigidbodies
     // Re-using the same collision is better for memory usage and performance    
     shape = new btCylinderShapeZ(btVector3(radius, radius, height / 2.0));
     p->m_collisionShapes.push_back(shape);
     
-    btScalar mass(0.2);    
+    btScalar mass(0.1);    
     btVector3 localInertia(0.0, 0.0, 0.0);
     shape->calculateLocalInertia(mass,localInertia);    
  
     btTransform startTransform;
     startTransform.setIdentity();
-    startTransform.setOrigin(btVector3(0.5, 0.5, 2));
 		
     //using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
     btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,shape,localInertia);
-    rbInfo.m_friction = 0.05;
+    rbInfo.m_friction = 0.05;    
+    rbInfo.m_linearDamping = 0.05;
+    rbInfo.m_angularDamping = 0.05;
     body = new btRigidBody(rbInfo);    
+    body->setGravity(btVector3 (0, 0, -9.81  * p->scalingFactor));
     body->setUserPointer((void*)(this));
     
     p->m_dynamicsWorld->addRigidBody(body, collisionType, collisionFilter);
+
+    AddDevices(p);
 }
 
 void BasicRobot::Unregister (PhysicsBullet* p)
 {
+}
+
+// very unfortunate... I consider this as a c++ bug : 
+// overloading inherited methods hides base methods even though signature is different
+void BasicRobot::Register (RenderOpenGL* r)
+{
+    RenderOpenGLInterface::Register(r);
+}
+
+void BasicRobot::Unregister (RenderOpenGL* r)
+{
+    RenderOpenGLInterface::Unregister(r);
 }
 
 
@@ -146,5 +150,12 @@ void BasicRobot::SetPosition (float x, float y, float z)
 {
     btTransform t = body->getCenterOfMassTransform();
     t.setOrigin(btVector3(x, y, z));
+    body->setCenterOfMassTransform(t);
+}
+
+void BasicRobot::SetRotation (float qx, float qy, float qz, float qa)
+{
+    btTransform t = body->getCenterOfMassTransform();
+    t.setRotation(btQuaternion(btVector3 (qx, qy, qz), qa));
     body->setCenterOfMassTransform(t);
 }

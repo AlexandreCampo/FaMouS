@@ -146,11 +146,10 @@ RenderOpenGL::RenderOpenGL(Simulator* s, int argc, char** argv) : Service (s)
     mouseX = 0;
     mouseY = 0;
 
-    simulationTicksDelay = 1.0;
     simulationElapsedTicks = 0.0;
-
     refreshDelay = (long int) (1.0 / 24.0 * 1000.0 * 1000.0);
     gettimeofday(&lastTv, NULL);   
+    RecalculateTimings();
 
     paused = false;
 }
@@ -158,6 +157,12 @@ RenderOpenGL::RenderOpenGL(Simulator* s, int argc, char** argv) : Service (s)
 RenderOpenGL::~RenderOpenGL ()
 {
 
+}
+
+// if timestep is changed, we have to call that function
+void RenderOpenGL::RecalculateTimings ()
+{
+    simulationTicksDelay = simulator->GetTimestep() / (1.0 / 24.0);
 }
 
 void RenderOpenGL::Step (float time, float timestep)
@@ -340,7 +345,7 @@ void RenderOpenGL::Run()
   std::cout << "       space : toggle pause" << std::endl;
   std::cout << "           - : slow down simulation" << std::endl;
   std::cout << "      + or = : accelerate simulation" << std::endl;
-  std::cout << "   backspace : real time speed (almost)" << std::endl;
+  std::cout << "   backspace : real time speed" << std::endl;
   std::cout << "           t : display current time in simulation" << std::endl;
   std::cout << "           r : reset simulation" << std::endl;
   std::cout << "  " << std::endl;
@@ -407,6 +412,7 @@ void RenderOpenGL::Idle()
     // this render has to callback the simulator ...
    if (!paused)
    {
+
        simulationElapsedTicks += 1.0;
        while (simulationElapsedTicks >= simulationTicksDelay 
 	      && simulationElapsedTicks > 0.0)

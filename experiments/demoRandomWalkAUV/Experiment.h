@@ -17,43 +17,53 @@
 /*    along with FaMouS.  If not, see <http://www.gnu.org/licenses/>.         */
 /*----------------------------------------------------------------------------*/
 
-#ifndef ARENA_CIRCULAR_H
-#define ARENA_CIRCULAR_H
+#ifndef EXPERIMENT_H
+#define EXPERIMENT_H
 
-#include "Object.h"
-#include "RenderOpenGLInterface.h"
-#include "PhysicsBulletInterface.h"
-
-#include "BulletDynamics/Dynamics/btDynamicsWorld.h"
-#include "BulletCollision/CollisionShapes/btCollisionShape.h"
+#include "Simulator.h"
+#include "Service.h"
+#include "Gsl.h"
 
 #include <vector>
 
-class ArenaCircular : public Object, public RenderOpenGLInterface, public PhysicsBulletInterface
+
+class PhysicsBullet;
+class RenderOpenGL;
+class RobotLily;
+class ControllerRandomWalkParameters;
+
+struct ExperimentParameters
+{
+    int robotsCount;
+    float aquariumRadius;
+    ExperimentParameters ()
+	{
+	    robotsCount = 30;
+	    aquariumRadius = 2.0;
+	}    
+};
+
+
+class Experiment : public Service
 {
 public:
 
-    float radius;
-    float height;
-    float width;
-    float borderResolution;
-    btVector3 dimGround;
-    btVector3 dimBorder;
+    PhysicsBullet* physics;
+    RenderOpenGL* render;
+    unsigned int ticks;
 
-    // the arena is made of several boxes (ground, then walls around)
-    std::vector<btCollisionShape*> shapes;
-    std::vector<btRigidBody*> bodies;
+    std::vector<RobotLily*> robots;
+		
+    ExperimentParameters* paramsExp;
+    ControllerRandomWalkParameters* paramsCtrl;
 
-    ArenaCircular(float radius = 3.0, float height = 2.0, float thickness = 1.0, float resolution = 40.0);
-    ~ArenaCircular();
-
-    void Draw (RenderOpenGL* r);
-
-    void Register (PhysicsBullet* p);
-    void Unregister (PhysicsBullet* p);
-
-    void Register (RenderOpenGL* r);
-    void Unregister (RenderOpenGL* r);
+    Experiment (Simulator* s);
+    ~Experiment ();
+    
+    void Reset ();
+    void Step (float time, float timestep);
+    void Run();
 };
+
 
 #endif
